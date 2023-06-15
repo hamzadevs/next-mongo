@@ -1,22 +1,23 @@
 import { BiEdit, BiTrashAlt } from "react-icons/bi";
 //import data from "../database/data.json";
-import { getUsers } from "@/lib/helper";
-import { useQuery } from "react-query";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteAction, toggleChangeAction, updateAction } from "@/redux/features/userReducer";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  deleteAction,
+  toggleChangeAction,
+  updateAction,
+} from "@/redux/features/userReducer";
+import { useGetUsersQuery } from "@/redux/features/user/userApi";
 
 export default function Table() {
-
-  const state = useSelector((state) => state.app.client.toggleForm)
-  console.log(state)
-  const {data, isLoading, isError, error} = useQuery('users', getUsers)
+  const state = useAppSelector((state) => state.app.client.toggleForm);
+  const { data, isLoading, isError, error } = useGetUsersQuery(); //useQuery('users', getUsers)
   // getUsers().then((res) => data = res);
   if (isLoading) {
-    return <span>Loading...</span>
+    return <span>Loading...</span>;
   }
 
   if (isError) {
-    return <span>Error: {error.message}</span>
+    return <span>Error: {error}</span>;
   }
   return (
     <table className="min-w-full table-auto">
@@ -52,28 +53,30 @@ export default function Table() {
 }
 
 function Tr({ _id, name, avatar, email, salary, date, status }) {
-  const visible = useSelector((state) => state.app.client.toggleForm);
-  const dispatch = useDispatch()
+  const visible = useAppSelector((state) => state.app.client.toggleForm);
+  const dispatch = useAppDispatch();
   const onUpdate = () => {
-    dispatch(toggleChangeAction())
-    if(visible) {
-      dispatch(updateAction(_id))
+    console.log(visible)
+    dispatch(toggleChangeAction());
+    if (visible) {
+      dispatch(updateAction(_id));
     }
-    console.log('visible', visible)
-  }
+  };
 
   const onDelete = () => {
-    console.log('visible', visible)
-    if(!visible){
-        dispatch(deleteAction(_id))
+    if (!visible) {
+      dispatch(deleteAction(_id));
     }
-}
-
+  };
 
   return (
     <tr className="bg-gray-50 text-center">
       <td className="px-16 py-2 flex flex-row items-center">
-        <img src={avatar || "#"} alt="" className="h-8 w-8 rounded-full object-cover" />
+        <img
+          src={avatar || "#"}
+          alt=""
+          className="h-8 w-8 rounded-full object-cover"
+        />
         <span className="text-center ml-2 font-semibold">
           {name || "Unknown"}
         </span>
@@ -89,8 +92,12 @@ function Tr({ _id, name, avatar, email, salary, date, status }) {
       </td>
       <td className="px-16 py-2">
         <button className="cursor">
-          <span className={`${status ? "bg-green-500": "bg-red-500"} text-white px-5 py-1 rounded-full`}>
-            {status  ? 'Active' : "Inactive"}
+          <span
+            className={`${
+              status ? "bg-green-500" : "bg-red-500"
+            } text-white px-5 py-1 rounded-full`}
+          >
+            {status ? "Active" : "Inactive"}
           </span>
         </button>
       </td>

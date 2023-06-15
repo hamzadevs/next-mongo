@@ -3,32 +3,28 @@ import Head from "next/head";
 import { BiCheck, BiUserPlus, BiX } from "react-icons/bi";
 import Table from "../components/table";
 import Form from "../components/form";
-import { useState } from "react";
-import { QueryClient, QueryClientProvider, useQueryClient } from "react-query";
-import { useDispatch, useSelector } from "react-redux";
 import { deleteAction, toggleChangeAction } from "@/redux/features/userReducer";
-import { getUsers, removeUser } from "@/lib/helper";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useDeleteUserMutation } from "@/redux/features/user/userApi";
 
 export default function Home() {
 
-  const visible = useSelector((state) => state.app.client.toggleForm)
-  const deleteId = useSelector(state => state.app.client.deleteId)
-  const queryclient = useQueryClient();
-  const dispatch =  useDispatch()
+  const visible = useAppSelector((state) => state.app.client.toggleForm)
+  const deleteId = useAppSelector(state => state.app.client.deleteId)
+  const [deleteUser, { data: userdeleted }] = useDeleteUserMutation()
+  const dispatch =  useAppDispatch()
   const handler = () => {
     dispatch(toggleChangeAction())
   }
 
   const deletehandler =  async () => {
     if(deleteId){
-      await removeUser(deleteId);
-      await queryclient.prefetchQuery('users', getUsers)
+      await deleteUser(deleteId)
       await dispatch(deleteAction(null))
     }
   }
 
-  const canclehandler = async () => {
-    console.log("cancel")
+  const cancelhandler = async () => {
     await dispatch(deleteAction(null))
   }
   
@@ -58,7 +54,7 @@ export default function Home() {
               </span>
             </button>
           </div>
-          { deleteId ? DeleteComponent({ deletehandler, canclehandler }) : <></>}
+          { deleteId ? DeleteComponent({ deletehandler, cancelhandler }) : <></>}
         </div>
         {/* collapsable form */}
         {visible ? <Form></Form> : <></>}
@@ -71,13 +67,13 @@ export default function Home() {
   );
 }
 
-function DeleteComponent({ deletehandler, canclehandler }){
+function DeleteComponent({ deletehandler, cancelhandler }){
   return (
     <div className='flex gap-5'>
         <button>Are you sure?</button>
         <button onClick={deletehandler} className='flex bg-red-500 text-white px-4 py-2 border rounded-md hover:bg-rose-500 hover:border-red-500 hover:text-gray-50'>
           Yes <span className='px-1'><BiX color='rgb(255 255 255)' size={25} /></span></button>
-        <button onClick={canclehandler} className='flex bg-green-500 text-white px-4 py-2 border rounded-md hover:bg-gree-500 hover:border-green-500 hover:text-gray-50'>
+        <button onClick={cancelhandler} className='flex bg-green-500 text-white px-4 py-2 border rounded-md hover:bg-gree-500 hover:border-green-500 hover:text-gray-50'>
           No <span className='px-1'><BiCheck color='rgb(255 255 255)' size={25} /></span></button>
     </div>
   )

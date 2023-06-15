@@ -1,28 +1,28 @@
 "use client";
-import { useReducer } from "react";
+import { BiPencil } from "react-icons/bi";
 import Bug from "./bug";
-import { useMutation, useQueryClient } from "react-query";
-import { addUser, getUsers } from "@/lib/helper";
 import Success from "./success";
+import { useAddUserMutation } from "@/redux/features/user/userApi";
 
 
 export default function AddUserForm({formData, setFormData}) {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
-  const addMutation = useMutation(addUser, {
+  const [addUser, { data: userUpdated }, isLoading, isError, error, isSuccess] = useAddUserMutation()
+  /* useMutation(addUser, {
     onSuccess: () => {
       queryClient.prefetchQuery("users", getUsers);
     },
-  });
+  }); */
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (Object.keys(formData).length == 0)
       return console.log("Don't have Form Data");
-    const { firstname, lastName, email, salary, date, status } = formData;
+    const { firstname, lastname, email, salary, date, status } = formData;
 
     const model = {
-      name: `${firstname} ${lastName}`,
+      name: `${firstname} ${lastname}`,
       avatar: `https://randomuser.me/api/portraits/men/${Math.floor(
         Math.random() * 10
       )}.jpg`,
@@ -31,15 +31,17 @@ export default function AddUserForm({formData, setFormData}) {
       date,
       status: status === "active" ? true : false,
     };
-    addMutation.mutate(model);
+    addUser(model);
   };
 
-  if (addMutation.isLoading) return <div>Loading!</div>;
-  if (addMutation.isError)
-    return <Bug message={addMutation.error.message}></Bug>;
-  if (addMutation.isSuccess)
+  if (isLoading) return <div>Loading!</div>;
+  if (isError)
+    return <Bug message={error.message}></Bug>;
+  if (isSuccess) {
+    isSuccess
     return <Success message={"Added Successfully"}></Success>;
-
+  }
+  
   return (
     <form className="grid lg:grid-cols-2 w-4/6 gap-4" onSubmit={handleSubmit}>
       <div className="input-type">
@@ -117,7 +119,10 @@ export default function AddUserForm({formData, setFormData}) {
       </div>
 
       <button className="flex justify-center text-md w-2/6 bg-green-500 text-white px-4 py-2 border rounded-md hover:bg-gray-50 hover:border-green-500 hover:text-green-500">
-        Add
+        Add{" "}
+        <span className="px-1">
+          <BiPencil size={24}></BiPencil>
+        </span>
       </button>
     </form>
   );

@@ -1,8 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
-import {RootState} from "hooks"
 
-type User = {
-  id: string;
+export type User = {
+  _id?: string;
   name: string;
   avatar: string;
   email: string;
@@ -28,21 +27,12 @@ export const userSlice = createSlice({
     toggleChangeAction: (state) => {
       state.client.toggleForm =! state.client.toggleForm;
     },
-    updateAction: (state, action) => {
+    updateAction: (state, action: PayloadAction<string>) => {
       state.client.formId = action.payload;
     },
 
-    deleteAction: (state, action) => {
+    deleteAction: (state, action: PayloadAction<string>) => {
       state.client.deleteId = action.payload;
-    },
-    addUser: (state, action: PayloadAction<User>) => {
-      const user = action.payload;
-      state.users.push(user)
-    },
-    removeUser: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const users = state.users.filter((user) => user.id !== id);
-      state.users = users;
     }
   }
 })
@@ -50,7 +40,5 @@ export const userSlice = createSlice({
 // actions
 export const {toggleChangeAction, updateAction, deleteAction} = userSlice.actions 
 
-// selectors
-export const selectUsers = (state: RootState) => state.users.users
 
 export default userSlice.reducer

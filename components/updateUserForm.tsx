@@ -1,26 +1,24 @@
-import { useReducer } from "react";
 import { BiBrush } from "react-icons/bi";
-import Success from "./success";
 import Bug from "./bug";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { editUser, getUser, getUsers } from "../lib/helper";
+import { useGetUserQuery, useUpdateUserMutation } from "@/redux/features/user/userApi";
 
 export default function UpdateUserForm({ formId, formData, setFormData }) {
-  const queryClient = useQueryClient();
-  const { isLoading, isError, data, error } = useQuery(["users", formId], () =>
+  const { isLoading, isError, data: user, error } = useGetUserQuery(formId)
+  const [updateUser, { data: userUpdated }] = useUpdateUserMutation()
+  /* useQuery(["users", formId], () =>
     getUser(formId)
-  );
-  const UpdateMutation = useMutation((newData) => editUser(formId, newData), {
+  ); */
+  /* useMutation((newData) => editUser(formId, newData), {
     onSuccess: async (data) => {
       // queryClient.setQueryData('users', (old) => [data])
       queryClient.prefetchQuery("users", getUsers);
     },
-  });
+  }); */
 
   if (isLoading) return <div>Loading...!</div>;
-  if (isError) return <div>Error</div>;
+  if (isError) return <Bug message={`Error: ${error}`}></Bug>;
 
-  const { name, avatar, salary, date, email, status } = data;
+  const { name, avatar, salary, date, email, status } = user;
   const [firstname, lastname] = name ? name.split(" ") : formData;
 
   const handleSubmit = async (e) => {
@@ -28,8 +26,8 @@ export default function UpdateUserForm({ formId, formData, setFormData }) {
     let userName = `${formData.firstname ?? firstname} ${
       formData.lastname ?? lastname
     }`;
-    let updated = Object.assign({}, data, formData, { name: userName });
-    await UpdateMutation.mutate(updated);
+    //let updated = Object.assign({}, user, formData, { name: userName });
+    updateUser({...user, ...formData, ...{ name: userName }})
   };
 
   return (
@@ -89,9 +87,9 @@ export default function UpdateUserForm({ formId, formData, setFormData }) {
         <div className="form-check">
           <input
             type="radio"
-            defaultChecked={status == "Active"}
+            defaultChecked={status}
             onChange={setFormData}
-            value="Active"
+            value={1}
             id="radioDefault1"
             name="status"
             className="form-check-input appearance-none rounded-full h-4 w-4 border border-gray-300  bg-white checked:bg-green-500 checked:border-green-500 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
@@ -103,9 +101,9 @@ export default function UpdateUserForm({ formId, formData, setFormData }) {
         <div className="form-check">
           <input
             type="radio"
-            defaultChecked={status !== "Active"}
+            defaultChecked={!status}
             onChange={setFormData}
-            value="Inactive"
+            value={0}
             id="radioDefault2"
             name="status"
             className="form-check-input appearance-none rounded-full h-4 w-4 border border-gray-300  bg-white checked:bg-green-500 checked:border-green-500 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
